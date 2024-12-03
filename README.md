@@ -1,5 +1,6 @@
 ## Welcome to Optimism Package
-The default package for Optimism
+The default package for Optimism. The kurtosis package uses [op-deployer](https://github.com/ethereum-optimism/optimism/tree/develop/op-deployer) to manage
+the L2 chains and all associated artifacts such as contract deployments.
 
 ```yaml
 optimism_package:
@@ -13,6 +14,18 @@ optimism_package:
 ethereum_package:
   network_params:
     preset: minimal
+    genesis_delay: 5
+    additional_preloaded_contracts: '
+      {
+        "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
+          "balance": "0ETH",
+          "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+          "storage": {},
+          "nonce": "1"
+        }
+      }
+    '
+
 ```
 
 Please note, by default your network will be running a `minimal` preset Ethereum network. Click [here](https://github.com/ethereum/consensus-specs/blob/dev/configs/minimal.yaml) to learn more about minimal preset. You can [customize](https://github.com/ethpandaops/ethereum-package) the L1 Ethereum network by modifying the `ethereum_package` configuration.
@@ -29,7 +42,7 @@ kurtosis run github.com/ethpandaops/optimism-package --args-file https://raw.git
 kurtosis run --enclave op-cdk --args-file network_params.yaml .
 ```
 
-For `--args-file` you can pass a local file path or a URL to a file.
+For `--args-file` parameters file, you can pass a local file path or a URL to a file.
 
 To clean up running enclaves and data, you can run:
 
@@ -39,6 +52,15 @@ kurtosis clean -a
 
 This will stop and remove all running enclaves and **delete all data**.
 
+#### Run with changes to the optimism package
+
+If you are attempting to test any changes to the package code, you can point to the directory as the `run` argument
+
+```bash
+cd ~/go/src/github.com/ethpandaops/optimism-package
+kurtosis run . --args-file ./network_params.yaml
+```
+
 # L2 Contract deployer
 The enclave will automatically deploy an optimism L2 contract on the L1 network. The contract address will be printed in the logs. You can use this contract address to interact with the L2 network.
 
@@ -47,7 +69,8 @@ Please refer to this Dockerfile if you want to see how the contract deployer ima
 
 ## Configuration
 
-To configure the package behaviour, you can modify your `network_params.yaml` file. The full YAML schema that can be passed in is as follows with the defaults provided:
+To configure the package behaviour, you can modify your `network_params.yaml` file and use that as the input to `--args-file`.
+The full YAML schema that can be passed in is as follows with the defaults provided:
 
 ```yaml
 optimism_package:
@@ -220,14 +243,19 @@ optimism_package:
         fjord_time_offset: 0
 
         # Granite fork
-        # Defaults to None - not activated - decimal value
+        # Defaults to 0 (genesis activation) - decimal value
         # Offset is in seconds
-        granite_time_offset: ""
+        granite_time_offset: 0
 
         # Holocene fork
         # Defaults to None - not activated - decimal value
         # Offset is in seconds
         holocene_time_offset: ""
+
+        # Isthmus fork
+        # Defaults to None - not activated - decimal value
+        # Offset is in seconds
+        isthmus_time_offset: ""
 
         # Interop fork
         # Defaults to None - not activated - decimal value
@@ -255,8 +283,9 @@ optimism_package:
   # L2 contract deployer configuration - used for all L2 networks
   # The docker image that should be used for the L2 contract deployer
   op_contract_deployer_params:
-    image: mslipper/op-deployer:latest
-    artifacts_url: https://storage.googleapis.com/oplabs-contract-artifacts/artifacts-v1-4accd01f0c35c26f24d2aa71aba898dd7e5085a2ce5daadc8a84b10caf113409.tar.gz
+    image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-deployer:v0.0.6
+    l1_artifacts_locator: tag://op-contracts/v1.6.0
+    l2_artifacts_locator: tag://op-contracts/v1.7.0-beta.1+l2-contracts
 
   # The global log level that all clients should log at
   # Valid values are "error", "warn", "info", "debug", and "trace"
@@ -283,9 +312,31 @@ optimism_package:
   # Whether the environment should be persistent; this is WIP and is slowly being rolled out accross services
   # Defaults to false
   persistent: false
+
+# Ethereum package configuration
+ethereum_package:
+  network_params:
+    # The Ethereum network preset to use
+    preset: minimal
+    # The delay in seconds before the genesis block is mined
+    genesis_delay: 5
+    # Preloaded contracts for the Ethereum network
+    additional_preloaded_contracts: '
+      {
+        "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
+          "balance": "0ETH",
+          "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+          "storage": {},
+          "nonce": "1"
+        }
+      }
+    '
+
 ```
 
 ### Additional configuration recommendations
+
+#### L1 customization
 
 It is required you to launch an L1 Ethereum node to interact with the L2 network. You can use the `ethereum_package` to launch an Ethereum node. The `ethereum_package` configuration is as follows:
 
@@ -303,10 +354,47 @@ ethereum_package:
     - el_type: reth
   network_params:
     preset: minimal
+    genesis_delay: 5
+    additional_preloaded_contracts: '
+      {
+        "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
+          "balance": "0ETH",
+          "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+          "storage": {},
+          "nonce": "1"
+        }
+      }
+    '
   additional_services:
     - dora
     - blockscout
 ```
+
+#### L2 customization with Hard Fork transitions
+
+To spin up an L2 chain with specific hard fork transition blocks and any local docker image to run the EL/CL components,
+use the `network_params` section of your arguments file to specify the hard fork transitions and custom images.
+
+```yaml
+optimism_package:
+  chains:
+    - participants:
+      - el_type: op-geth
+        el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:<tag>"
+        cl_type: op-node
+        cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:<tag>"
+      - el_type: op-geth
+        el_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:<tag>"
+        cl_type: op-node
+        cl_image: "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:<tag>"
+      network_params:
+        fjord_time_offset: 0
+        granite_time_offset: 0
+        holocene_time_offset: 4
+        isthmus_time_offset: 8
+```
+
+#### Multiple L2 chains
 
 Additionally, you can spin up multiple L2 networks by providing a list of L2 configuration parameters like so:
 
@@ -333,6 +421,18 @@ ethereum_package:
     - el_type: reth
   network_params:
     preset: minimal
+    genesis_delay: 5
+    additional_preloaded_contracts: '
+      {
+        "0x4e59b44847b379578588920cA78FbF26c0B4956C": {
+          "balance": "0ETH",
+          "code": "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3",
+          "storage": {},
+          "nonce": "1"
+        }
+      }
+    '
+
   additional_services:
     - dora
     - blockscout
