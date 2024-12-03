@@ -26,6 +26,7 @@ Kurtosis packages are parameterizable, meaning you can customize your network an
 
 ```bash
 kurtosis run github.com/ethpandaops/optimism-package --args-file https://raw.githubusercontent.com/ethpandaops/optimism-package/main/network_params.yaml
+kurtosis run --enclave op-cdk --args-file network_params.yaml .
 ```
 
 For `--args-file` you can pass a local file path or a URL to a file.

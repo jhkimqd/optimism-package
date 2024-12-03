@@ -15,7 +15,11 @@ def run(plan, args):
     """
     plan.print("Parsing the L1 input args")
     # If no args are provided, use the default values with minimal preset
-    ethereum_args = args.get("ethereum_package", {})
+    ethereum_args = args.get("ethereum_package", {"participants": [
+                {
+                    "el_extra_params": ["--gcmode archive"],
+                }
+            ],})
     if "network_params" not in ethereum_args:
         ethereum_args.update(input_parser.default_ethereum_package_network_params())
 
