@@ -20,8 +20,14 @@ def run(plan, args):
                     "el_extra_params": ["--gcmode archive"],
                 }
             ],})
-    if "network_params" not in ethereum_args:
-        ethereum_args.update(input_parser.default_ethereum_package_network_params())
+    external_l1_args = args.get("external_l1_network_params", {})
+    if external_l1_args:
+        external_l1_args = input_parser.external_l1_network_params_input_parser(
+            plan, external_l1_args
+        )
+    else:
+        if "network_params" not in ethereum_args:
+            ethereum_args.update(input_parser.default_ethereum_package_network_params())
 
     # need to do a raw get here in case only optimism_package is provided.
     # .get will return None if the key is in the config with a None value.
