@@ -33,21 +33,38 @@ def run(plan, args):
     persistent = optimism_args_with_right_defaults.persistent
 
     # Deploy the L1
-    plan.print("Deploying a local L1")
-    l1 = ethereum_package.run(plan, ethereum_args)
-    plan.print(l1.network_params)
-    # Get L1 info
-    all_l1_participants = l1.all_participants
-    l1_network_params = l1.network_params
-    l1_network_id = l1.network_id
-    l1_priv_key = l1.pre_funded_accounts[
-        12
-    ].private_key  # reserved for L2 contract deployers
-    l1_config_env_vars = get_l1_config(
-        all_l1_participants, l1_network_params, l1_network_id
-    )
+    l1_network = ""
+    if external_l1_args:
+        plan.print("Using external L1")
+        plan.print(external_l1_args)
 
-    if l1_network_params.network == "kurtosis":
+        l1_rpc_url = external_l1_args.el_rpc_url
+        l1_priv_key = external_l1_args.priv_key
+
+        l1_config_env_vars = {
+            "L1_RPC_KIND": external_l1_args.rpc_kind,
+            "L1_RPC_URL": l1_rpc_url,
+            "CL_RPC_URL": external_l1_args.cl_rpc_url,
+            "L1_WS_URL": external_l1_args.el_ws_url,
+            "L1_CHAIN_ID": external_l1_args.network_id,
+        }
+    else:
+        plan.print("Deploying a local L1")
+        l1 = ethereum_package.run(plan, ethereum_args)
+        plan.print(l1.network_params)
+        # Get L1 info
+        all_l1_participants = l1.all_participants
+        l1_network_params = l1.network_params
+        l1_network_id = l1.network_id
+        l1_rpc_url = all_l1_participants[0].el_context.rpc_http_url
+        l1_priv_key = l1.pre_funded_accounts[
+            12
+        ].private_key  # reserved for L2 contract deployers
+        l1_config_env_vars = get_l1_config(
+            all_l1_participants, l1_network_params, l1_network_id
+        )
+
+    if l1_network == "kurtosis":
         plan.print("Waiting for L1 to start up")
         wait_for_sync.wait_for_startup(plan, l1_config_env_vars)
     else:
@@ -69,7 +86,7 @@ def run(plan, args):
             deployment_output,
             l1_config_env_vars,
             l1_priv_key,
-            all_l1_participants[0].el_context,
+            l1_rpc_url,
             global_log_level,
             global_node_selectors,
             global_tolerations,
@@ -87,7 +104,7 @@ def run(plan, args):
             optimism_args,
             l1_config_env_vars,
             l1_priv_key,
-            all_l1_participants[0].el_context,
+            l1_rpc_url,
             global_log_level,
             global_node_selectors,
             global_tolerations,
@@ -121,7 +138,7 @@ def run(plan, args):
                 l2_args,
                 l1_config_env_vars,
                 l1_priv_key,
-                all_l1_participants[0].el_context,
+                l1_rpc_url,
                 global_log_level,
                 global_node_selectors,
                 global_tolerations,
