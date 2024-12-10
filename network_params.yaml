@@ -3,16 +3,15 @@ optimism_package:
     - participants:
       - el_type: op-geth
         cl_type: op-node
-      - el_type: op-reth
-        cl_type: op-node
-      - el_type: op-geth
-        cl_type: op-node
-      - el_type: op-reth
-        cl_type: op-node
       network_params:
         network: "kurtosis"
         network_id: "2151908"
-        seconds_per_slot: 1
+        seconds_per_slot: 2
+        max_sequencer_drift: 300
+        sequencer_window_size: 200
+        l2_output_oracle_submission_interval: 10
+        finalization_period_seconds: 2
+        channel_timeout: 10
         name: "op-kurtosis"
         fjord_time_offset: 0
         granite_time_offset: 0

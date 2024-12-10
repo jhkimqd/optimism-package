@@ -13,16 +13,16 @@ DEFAULT_EL_IMAGES = {
 }
 
 DEFAULT_CL_IMAGES = {
-    "op-node": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:develop",
+    "op-node": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.4",
     "hildr": "ghcr.io/optimism-java/hildr:latest",
 }
 
 DEFAULT_BATCHER_IMAGES = {
-    "op-batcher": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:develop",
+    "op-batcher": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher:v1.9.4",
 }
 
 DEFAULT_PROPOSER_IMAGES = {
-    "op-proposer": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:develop",
+    "op-proposer": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer:v1.9.4",
 }
 
 DEFAULT_ADDITIONAL_SERVICES = []
@@ -74,6 +74,11 @@ def input_parser(plan, input_args):
                     network=result["network_params"]["network"],
                     network_id=result["network_params"]["network_id"],
                     seconds_per_slot=result["network_params"]["seconds_per_slot"],
+                    sequencer_window_size=result["network_params"]["sequencer_window_size"],
+                    max_sequencer_drift=result["network_params"]["max_sequencer_drift"],
+                    l2_output_oracle_submission_interval=result["network_params"]["l2_output_oracle_submission_interval"],
+                    finalization_period_seconds=result["network_params"]["finalization_period_seconds"],
+                    channel_timeout=result["network_params"]["channel_timeout"],
                     name=result["network_params"]["name"],
                     fjord_time_offset=result["network_params"]["fjord_time_offset"],
                     granite_time_offset=result["network_params"]["granite_time_offset"],

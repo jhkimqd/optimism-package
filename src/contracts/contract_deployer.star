@@ -79,6 +79,41 @@ def deploy_contracts(
                 str(chain.network_params.seconds_per_slot),
             )
             for index, chain in enumerate(optimism_args.chains)
+        ] + [
+            (
+                "int",
+                "chains.[{0}].deployOverrides.sequencerWindowSize".format(index),
+                str(chain.network_params.sequencer_window_size),
+            )
+            for index, chain in enumerate(optimism_args.chains)
+        ] + [
+            (
+                "int",
+                "chains.[{0}].deployOverrides.maxSequencerDrift".format(index),
+                str(chain.network_params.max_sequencer_drift),
+            )
+            for index, chain in enumerate(optimism_args.chains)
+        ] + [
+            (
+                "int",
+                "chains.[{0}].deployOverrides.l2OutputOracleSubmissionInterval".format(index),
+                str(chain.network_params.l2_output_oracle_submission_interval),
+            )
+            for index, chain in enumerate(optimism_args.chains)
+        ] + [
+            (
+                "int",
+                "chains.[{0}].deployOverrides.finalizationPeriodSeconds".format(index),
+                str(chain.network_params.finalization_period_seconds),
+            )
+            for index, chain in enumerate(optimism_args.chains)
+        ] + [
+            (
+                "int",
+                "chains.[{0}].deployOverrides.channelTimeout".format(index),
+                str(chain.network_params.channel_timeout),
+            )
+            for index, chain in enumerate(optimism_args.chains)
         ]
         + [
             (
