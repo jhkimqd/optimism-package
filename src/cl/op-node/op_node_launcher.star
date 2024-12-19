@@ -133,7 +133,6 @@ def launch(
         peer_id=beacon_peer_id,
     )
 
-
 def get_beacon_config(
     plan,
     launcher,
@@ -158,7 +157,6 @@ def get_beacon_config(
 
     cmd = [
         "op-node",
-        "--syncmode=execution-layer",
         "--l2={0}".format(EXECUTION_ENGINE_ENDPOINT),
         "--l2.jwt-secret=" + ethereum_package_constants.JWT_MOUNT_PATH_ON_CONTAINER,
         "--verifier.l1-confs=4",
@@ -209,7 +207,9 @@ def get_beacon_config(
     cmd += participant.cl_extra_params
 
     files = {
-        ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: launcher.deployment_output,
+        ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: Directory(
+            artifact_names=[launcher.deployment_output],
+        ),
         ethereum_package_constants.JWT_MOUNTPOINT_ON_CLIENTS: launcher.jwt_file,
     }
 

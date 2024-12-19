@@ -13,7 +13,9 @@ DEFAULT_EL_IMAGES = {
 }
 
 DEFAULT_CL_IMAGES = {
-    "op-node": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.4",
+    # "op-node": "us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node:v1.9.4",
+    "op-node": "jhkimqd/op-node:regenesis",
+
     "hildr": "ghcr.io/optimism-java/hildr:latest",
 }
 

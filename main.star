@@ -3,6 +3,7 @@ contract_deployer = import_module("./src/contracts/contract_deployer.star")
 l2_launcher = import_module("./src/l2.star")
 wait_for_sync = import_module("./src/wait/wait_for_sync.star")
 input_parser = import_module("./src/package_io/input_parser.star")
+deploy_regenesis_package = "./src/regenesis.star"
 
 
 def run(plan, args):
@@ -83,6 +84,7 @@ def run(plan, args):
         l1_config_env_vars,
         optimism_args_with_right_defaults,
     )
+    import_module(deploy_regenesis_package).run_regenesis(plan, deployment_output, args)
 
     for chain in optimism_args_with_right_defaults.chains:
         l2_launcher.launch_l2(

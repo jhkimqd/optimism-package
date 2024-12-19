@@ -170,7 +170,7 @@ def get_config(
     init_datadir_cmd_str = "geth init --datadir={0} --state.scheme=hash {1}".format(
         EXECUTION_DATA_DIRPATH_ON_CLIENT_CONTAINER,
         ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS
-        + "/cdk-erigon-regenesis.json",
+        + "/regenesis.json",
     )
     # init_datadir_cmd_str = "geth init --datadir={0} --state.scheme=hash {1}".format(
     #     EXECUTION_DATA_DIRPATH_ON_CLIENT_CONTAINER,
@@ -239,19 +239,16 @@ def get_config(
         command_str = " && ".join(subcommand_strs)
     else:
         command_str = cmd_str
-        
-    regenesis_json_artifact = create_regenesis_json_artifact(
-        plan
+
+    append_regenesis_artifact = plan.get_files_artifact(
+        name = "cdk-erigon-regenesis-json"
     )
 
     files = {
-        # ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: launcher.deployment_output,
-        ethereum_package_constants.JWT_MOUNTPOINT_ON_CLIENTS: launcher.jwt_file,
         ethereum_package_constants.GENESIS_DATA_MOUNTPOINT_ON_CLIENTS: Directory(
-            artifact_names=[
-                    regenesis_json_artifact,
-                ]
+            artifact_names=[launcher.deployment_output, append_regenesis_artifact],
         ),
+        ethereum_package_constants.JWT_MOUNTPOINT_ON_CLIENTS: launcher.jwt_file,
     }
     if persistent:
         files[EXECUTION_DATA_DIRPATH_ON_CLIENT_CONTAINER] = Directory(
@@ -306,21 +303,3 @@ def new_op_geth_launcher(
         network_id=network_id,
     )
 
-
-def create_regenesis_json_artifact(
-    plan
-):
-    regenesis_json_template = read_file(
-        src="./regenesis.json"
-    )
-    return plan.render_templates(
-        name="regenesis-json-artifact",
-        config={
-            "cdk-erigon-regenesis.json": struct(
-                template=regenesis_json_template,
-                data={
-
-                }
-            )
-        },
-    )
